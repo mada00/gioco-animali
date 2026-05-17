@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gioco Animali Kids</title>
+
+<style>
+body{
+    font-family: 'Comic Sans MS', Arial;
+    background: linear-gradient(to bottom, #a8e6cf, #dcedc1);
+    margin:0;
+    text-align:center;
+}
+.container{
+    max-width:600px;
+    margin:auto;
+    padding:15px;
+}
+h2{
+    background:#ff8b94;
+    color:white;
+    padding:12px;
+    border-radius:15px;
+}
+img{
+    width:260px;
+    height:260px;
+    object-fit:cover;
+    border-radius:20px;
+    margin:10px;
+}
+.card{
+    background:white;
+    padding:15px;
+    border-radius:15px;
+    margin-top:10px;
+}
+input{
+    width:90%;
+    padding:12px;
+    font-size:18px;
+    border-radius:10px;
+    border:2px solid #ccc;
+}
+button{
+    padding:15px;
+    margin:8px;
+    width:90%;
+    font-size:18px;
+    border:none;
+    border-radius:12px;
+    background:#ffaaa5;
+    color:white;
+}
+.correct{ background:#a5d6a7; }
+.wrong{ background:#ef9a9a; }
+.score{
+    font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🐾 Gioco degli Animali</h2>
+
+<div class="score">⭐ Punteggio: <span id="score">0</span></div>
+
+<img id="img" src="">
+
+<div class="card" id="domande"></div>
+<div class="card" id="quiz"></div>
+<div class="card" id="soluzioni" style="display:none;"></div>
+
+<button onclick="estrai()">🎴 Nuova carta</button>
+<button onclick="controlla()">✅ Controlla quiz</button>
+<button onclick="mostraRisposte()">👀 Mostra risposte</button>
+<button onclick="parla()">🔊 Ascolta</button>
+
+</div>
+
+<script>
+
+// 🐾 ANIMALI COMPLETI
+const animali = [
+
+{"nome":"Leone","categoria":"carnivoro","classe":"Mammifero","ambiente":"Savana","riproduzione":"Viviparo","respirazione":"Polmoni","movimento":"Corre","temperatura":"Omeotermo","nutrizione":"Carne","img":"immagini/leone.jpg"},
+{"nome":"Elefante","categoria":"erbivoro","classe":"Mammifero","ambiente":"Savana","riproduzione":"Viviparo","respirazione":"Polmoni","movimento":"Cammina","temperatura":"Omeotermo","nutrizione":"Erba e foglie","img":"immagini/elefante.jpg"},
+{"nome":"Orso","categoria":"onnivoro","classe":"Mammifero","ambiente":"Foresta","riproduzione":"Viviparo","respirazione":"Polmoni","movimento":"Cammina e corre","temperatura":"Omeotermo","nutrizione":"Frutta e carne","img":"immagini/orso.jpg"},
+{"nome":"Delfino","categoria":"carnivoro","classe":"Mammifero","ambiente":"Mare","riproduzione":"Viviparo","respirazione":"Polmoni","movimento":"Nuota","temperatura":"Omeotermo","nutrizione":"Pesce","img":"immagini/delfino.jpg"},
+{"nome":"Pipistrello","categoria":"insettivoro","classe":"Mammifero","ambiente":"Grotte e foreste","riproduzione":"Viviparo","respirazione":"Polmoni","movimento":"Vola","temperatura":"Omeotermo","nutrizione":"Insetti","img":"immagini/pipistrello.jpg"},
+{"nome":"Canguro","categoria":"erbivoro","classe":"Mammifero","ambiente":"Prateria","riproduzione":"Viviparo","respirazione":"Polmoni","movimento":"Salta","temperatura":"Omeotermo","nutrizione":"Erba","img":"immagini/canguro.jpg"},
+{"nome":"Balena","categoria":"carnivoro","classe":"Mammifero","ambiente":"Oceano","riproduzione":"Viviparo","respirazione":"Polmoni","movimento":"Nuota","temperatura":"Omeotermo","nutrizione":"Plancton","img":"immagini/balena.jpg"},
+
+{"nome":"Aquila","categoria":"carnivoro","classe":"Uccello","ambiente":"Montagna","riproduzione":"Oviparo","respirazione":"Polmoni","movimento":"Vola","temperatura":"Omeotermo","nutrizione":"Piccoli animali","img":"immagini/aquila.jpg"},
+{"nome":"Pinguino","categoria":"carnivoro","classe":"Uccello","ambiente":"Ghiaccio","riproduzione":"Oviparo","respirazione":"Polmoni","movimento":"Nuota e cammina","temperatura":"Omeotermo","nutrizione":"Pesce","img":"immagini/pinguino.jpg"},
+{"nome":"Gallina","categoria":"onnivoro","classe":"Uccello","ambiente":"Fattoria","riproduzione":"Oviparo","respirazione":"Polmoni","movimento":"Cammina","temperatura":"Omeotermo","nutrizione":"Semi e insetti","img":"immagini/gallina.jpg"},
+
+{"nome":"Serpente","categoria":"carnivoro","classe":"Rettile","ambiente":"Foresta","riproduzione":"Oviparo","respirazione":"Polmoni","movimento":"Striscia","temperatura":"Eterotermo","nutrizione":"Piccoli animali","img":"immagini/serpente.jpg"},
+{"nome":"Coccodrillo","categoria":"carnivoro","classe":"Rettile","ambiente":"Fiume","riproduzione":"Oviparo","respirazione":"Polmoni","movimento":"Nuota e cammina","temperatura":"Eterotermo","nutrizione":"Carne","img":"immagini/coccodrillo.jpg"},
+
+{"nome":"Rana","categoria":"carnivoro","classe":"Anfibio","ambiente":"Stagno","riproduzione":"Oviparo","respirazione":"Polmoni e pelle","movimento":"Salta","temperatura":"Eterotermo","nutrizione":"Insetti","img":"immagini/rana.jpg"},
+
+{"nome":"Squalo","categoria":"carnivoro","classe":"Pesce","ambiente":"Oceano","riproduzione":"Ovoviviparo","respirazione":"Branchie","movimento":"Nuota","temperatura":"Eterotermo","nutrizione":"Pesce","img":"immagini/squalo.jpg"},
+{"nome":"Tonno","categoria":"carnivoro","classe":"Pesce","ambiente":"Mare","riproduzione":"Oviparo","respirazione":"Branchie","movimento":"Nuota","temperatura":"Eterotermo","nutrizione":"Pesce","img":"immagini/tonno.jpg"},
+{"nome":"Carpa","categoria":"onnivoro","classe":"Pesce","ambiente":"Fiume","riproduzione":"Oviparo","respirazione":"Branchie","movimento":"Nuota","temperatura":"Eterotermo","nutrizione":"Alghe","img":"immagini/carpa.jpg"}
+
+];
+
+// 🧠 QUIZ
+const quiz = [
+{domanda:"I pesci respirano con le...", risposta:"branchie"},
+{domanda:"Gli animali che mangiano solo vegetali sono...", risposta:"erbivori"},
+{domanda:"Gli animali che nascono dalle uova sono...", risposta:"ovipari"},
+{domanda:"Gli animali a sangue caldo mantengono temperatura...", risposta:"costante"},
+{domanda:"Gli onnivori mangiano solo frutta (vero/falso)", risposta:"falso"},
+{domanda:"Che cos'è la respirazione?", risposta:"è la funzione vitale attraverso la quale l'essere vivente assorbe ossigeno"},
+{domanda:"Che cos'è la riproduzione?", risposta:"è la funzione vitale attraverso la quale un essere vivente riproduce un altro individuo della stessa specie"},
+{domanda:"Che cos'è il movimento?", risposta:"è la funzione vitale degli esseri viventi per poter mangiare correre e difendersi"},
+{domanda:"Che cosa sono i polmoni?", risposta:"organi a forma di sacco"},
+{domanda:"A cosa servono le branchie?", risposta:"servono agli animali acquatici per respirare e assorbono l'ossigeno contenuto nell'acqua"},
+{domanda:"Che cosa sono le trachee?", risposta:"attraverso le trachee gli insetti respirano grazie a piccoli fori collegati alle cellule tramite tubicini"}
+];
+
+let corrente;
+let domandaQuiz;
+let punteggio = 0;
+
+// 🎴 Estrazione
+function estrai(){
+    corrente = animali[Math.floor(Math.random()*animali.length)];
+    domandaQuiz = quiz[Math.floor(Math.random()*quiz.length)];
+
+    document.getElementById("img").src = corrente.img;
+
+    document.getElementById("domande").innerHTML = `
+    <h3>${corrente.nome}</h3>
+    <b>Classe:</b> ${corrente.classe}<br><br>
+    🎤 Rispondi a voce:<br>
+    • Dove vive?<br>
+    • Come respira?<br>
+    • Come si riproduce?<br>
+    • Come si muove?<br>
+    • Temperatura?<br>
+    • Cosa mangia?<br>
+    • Tipo nutrizione?
+    `;
+
+    document.getElementById("quiz").innerHTML = `
+    <h3>🧠 Quiz</h3>
+    ${domandaQuiz.domanda}<br>
+    <input id="quizRisposta">
+    `;
+
+    document.getElementById("soluzioni").style.display = "none";
+}
+
+// 🎯 Controllo
+function controlla(){
+    let input = document.getElementById("quizRisposta");
+    let user = input.value.toLowerCase();
+    let risposta = domandaQuiz.risposta.toLowerCase();
+
+    let parole = risposta.split(" ");
+    let match = parole.filter(p => user.includes(p));
+
+    if(match.length >= parole.length / 2){
+        input.className = "correct";
+        punteggio++;
+    } else {
+        input.className = "wrong";
+    }
+
+    document.getElementById("score").innerText = punteggio;
+}
+
+// 👀 Risposte
+function mostraRisposte(){
+    let box = document.getElementById("soluzioni");
+    box.style.display = "block";
+
+    box.innerHTML = `
+    <h3>📘 Risposte</h3>
+    Ambiente: ${corrente.ambiente}<br>
+    Respirazione: ${corrente.respirazione}<br>
+    Riproduzione: ${corrente.riproduzione}<br>
+    Movimento: ${corrente.movimento}<br>
+    Temperatura: ${corrente.temperatura}<br>
+    Nutrizione: ${corrente.nutrizione}<br>
+    Gruppo: ${corrente.categoria}<br><br>
+    <b>Quiz:</b> ${domandaQuiz.risposta}
+    `;
+}
+
+// 🔊 Audio
+function parla(){
+    let testo = `Questo è un ${corrente.nome}. Dove vive? Come respira?`;
+    let voce = new SpeechSynthesisUtterance(testo);
+    voce.lang = "it-IT";
+    speechSynthesis.speak(voce);
+}
+
+</script>
+
+</body>
+</html>
