@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gioco Animali Kids</title>
+
+<title>Gioco degli Animali</title>
 
 <style>
+
 body{
-    font-family: 'Comic Sans MS', Arial;
-    background: linear-gradient(to bottom, #a8e6cf, #dcedc1);
+    font-family:'Comic Sans MS', Arial;
+    background:linear-gradient(to bottom, #a8e6cf, #dcedc1);
     margin:0;
     text-align:center;
 }
 
 .container{
-    max-width:700px;
+    max-width:900px;
     margin:auto;
     padding:15px;
 }
@@ -36,9 +40,10 @@ img{
 
 .card{
     background:white;
-    padding:15px;
+    padding:20px;
     border-radius:15px;
     margin-top:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
 input{
@@ -58,17 +63,100 @@ button{
     border-radius:12px;
     background:#ffaaa5;
     color:white;
+    cursor:pointer;
+    transition:0.2s;
 }
 
-.correct{ background:#a5d6a7; }
-.wrong{ background:#ef9a9a; }
+button:hover{
+    transform:scale(1.02);
+}
+
+.correct{
+    background:#a5d6a7;
+}
+
+.wrong{
+    background:#ef9a9a;
+}
 
 .footer{
     margin-top:20px;
     font-size:14px;
     color:#555;
 }
+
+.domanda{
+    margin:10px 0;
+    line-height:1.8;
+    font-size:20px;
+    text-align:center;
+}
+
+.verbo{
+    color:#e53935;
+    font-weight:bold;
+}
+
+.aiutoAttivo{
+    background:#81c784 !important;
+}
+
+/* 🧠 AREA DOMANDE */
+
+.areaDomande{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+
+/* 🖼️ IMMAGINE AIUTO */
+
+.aiutoBox{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:10px;
+}
+
+.aiutoBox img{
+    width:420px;
+    max-width:100%;
+    height:auto;
+    object-fit:contain;
+    border-radius:0;
+    margin-bottom:8px;
+}
+
+.aiutoTesto{
+    font-size:16px;
+    color:#666;
+    line-height:1.4;
+    text-align:center;
+    max-width:260px;
+}
+
+.mostraAiuto{
+    display:flex;
+}
+
+/* 📱 MOBILE */
+
+@media(max-width:700px){
+
+    .aiutoBox img{
+        width:170px;
+    }
+
+    .domanda{
+        font-size:18px;
+    }
+
+}
+
 </style>
+
 </head>
 
 <body>
@@ -80,107 +168,413 @@ button{
 <img id="img">
 
 <div class="card" id="domande"></div>
+
 <div class="card" id="quiz"></div>
+
 <div class="card" id="soluzioni" style="display:none;"></div>
 
 <button onclick="estrai()">🎴 Nuova carta</button>
+
+<button id="btnAiuto" onclick="toggleAiuto()">
+🎤 Aiutami a raccontare
+</button>
+
 <button onclick="controlla()">✅ Controlla quiz</button>
+
 <button onclick="mostraRisposte()">👀 Mostra risposte</button>
 
-<div class="footer">📚 App didattica di Massimiliano Cuccarano</div>
+<div class="footer">
+📚 App didattica di Massimiliano Cuccarano
+</div>
 
 </div>
 
 <script>
 
-// 🐾 ANIMALI CON VERTEBRATI / INVERTEBRATI
-const animali = [
-{"nome":"Leone","vertebrato":"vertebrato","classe":"Mammifero","ambiente":"Savana","respirazione":"Polmoni","riproduzione":"Viviparo","movimento":"Corre","temperatura":"Omeotermo","nutrizione":"Carne","categoria":"carnivoro","img":"immagini/leone.jpg"},
-{"nome":"Elefante","vertebrato":"vertebrato","classe":"Mammifero","ambiente":"Savana","respirazione":"Polmoni","riproduzione":"Viviparo","movimento":"Cammina","temperatura":"Omeotermo","nutrizione":"Erba","categoria":"erbivoro","img":"immagini/elefante.jpg"},
-{"nome":"Aquila","vertebrato":"vertebrato","classe":"Uccello","ambiente":"Montagna","respirazione":"Polmoni","riproduzione":"Oviparo","movimento":"Vola","temperatura":"Omeotermo","nutrizione":"Carne","categoria":"carnivoro","img":"immagini/aquila.jpg"},
-{"nome":"Serpente","vertebrato":"vertebrato","classe":"Rettile","ambiente":"Foresta","respirazione":"Polmoni","riproduzione":"Oviparo","movimento":"Striscia","temperatura":"Eterotermo","nutrizione":"Carne","categoria":"carnivoro","img":"immagini/serpente.jpg"},
-{"nome":"Rana","vertebrato":"vertebrato","classe":"Anfibio","ambiente":"Stagno","respirazione":"Polmoni e pelle","riproduzione":"Oviparo","movimento":"Salta","temperatura":"Eterotermo","nutrizione":"Insetti","categoria":"carnivoro","img":"immagini/rana.jpg"},
-{"nome":"Squalo","vertebrato":"vertebrato","classe":"Pesce","ambiente":"Oceano","respirazione":"Branchie","riproduzione":"Ovoviviparo","movimento":"Nuota","temperatura":"Eterotermo","nutrizione":"Pesce","categoria":"carnivoro","img":"immagini/squalo.jpg"},
+// 🐾 DATABASE ANIMALI
 
-{"nome":"Farfalla","vertebrato":"invertebrato","classe":"Insetto","ambiente":"Giardino","respirazione":"Trachee","riproduzione":"Oviparo","movimento":"Vola","temperatura":"Eterotermo","nutrizione":"Nettare","categoria":"erbivoro","img":"immagini/farfalla.jpg"},
-{"nome":"Granchio","vertebrato":"invertebrato","classe":"Crostaceo","ambiente":"Mare","respirazione":"Branchie","riproduzione":"Oviparo","movimento":"Cammina","temperatura":"Eterotermo","nutrizione":"Onnivoro","categoria":"onnivoro","img":"immagini/granchio.jpg"}
+const animali = [
+
+{
+nome:"Leone",
+vertebrato:"vertebrato",
+classe:"Mammifero",
+ambiente:"Savana",
+respirazione:"Polmoni",
+riproduzione:"Viviparo",
+movimento:"Corre",
+temperatura:"Omeotermo",
+nutrizione:"Carne",
+categoria:"Carnivoro",
+img:"immagini/leone.jpg"
+},
+
+{
+nome:"Elefante",
+vertebrato:"vertebrato",
+classe:"Mammifero",
+ambiente:"Savana",
+respirazione:"Polmoni",
+riproduzione:"Viviparo",
+movimento:"Cammina",
+temperatura:"Omeotermo",
+nutrizione:"Erba",
+categoria:"Erbivoro",
+img:"immagini/elefante.jpg"
+},
+
+{
+nome:"Aquila",
+vertebrato:"vertebrato",
+classe:"Uccello",
+ambiente:"Montagna",
+respirazione:"Polmoni",
+riproduzione:"Oviparo",
+movimento:"Vola",
+temperatura:"Omeotermo",
+nutrizione:"Carne",
+categoria:"Carnivoro",
+img:"immagini/aquila.jpg"
+},
+
+{
+nome:"Serpente",
+vertebrato:"vertebrato",
+classe:"Rettile",
+ambiente:"Foresta",
+respirazione:"Polmoni",
+riproduzione:"Oviparo",
+movimento:"Striscia",
+temperatura:"Eterotermo",
+nutrizione:"Carne",
+categoria:"Carnivoro",
+img:"immagini/serpente.jpg"
+},
+
+{
+nome:"Rana",
+vertebrato:"vertebrato",
+classe:"Anfibio",
+ambiente:"Stagno",
+respirazione:"Polmoni e pelle",
+riproduzione:"Oviparo",
+movimento:"Salta",
+temperatura:"Eterotermo",
+nutrizione:"Insetti",
+categoria:"Carnivoro",
+img:"immagini/rana.jpg"
+},
+
+{
+nome:"Squalo",
+vertebrato:"vertebrato",
+classe:"Pesce",
+ambiente:"Oceano",
+respirazione:"Branchie",
+riproduzione:"Ovoviviparo",
+movimento:"Nuota",
+temperatura:"Eterotermo",
+nutrizione:"Pesce",
+categoria:"Carnivoro",
+img:"immagini/squalo.jpg"
+},
+
+{
+nome:"Farfalla",
+vertebrato:"invertebrato",
+classe:"Insetto",
+ambiente:"Giardino",
+respirazione:"Trachee",
+riproduzione:"Oviparo",
+movimento:"Vola",
+temperatura:"Eterotermo",
+nutrizione:"Nettare",
+categoria:"Erbivoro",
+img:"immagini/farfalla.jpg"
+},
+
+{
+nome:"Granchio",
+vertebrato:"invertebrato",
+classe:"Crostaceo",
+ambiente:"Mare",
+respirazione:"Branchie",
+riproduzione:"Oviparo",
+movimento:"Cammina",
+temperatura:"Eterotermo",
+nutrizione:"Alghe e piccoli animali",
+categoria:"Onnivoro",
+img:"immagini/granchio.jpg"
+}
+
 ];
 
-// 🧠 QUIZ NUOVI
+// 🧠 QUIZ
+
 const quiz = [
-{domanda:"Gli animali con colonna vertebrale sono...", risposta:"vertebrati"},
-{domanda:"Gli animali senza colonna vertebrale sono...", risposta:"invertebrati"},
-{domanda:"Che cos'è l'endoscheletro?", risposta:"scheletro interno al corpo"},
-{domanda:"Che cos'è l'esoscheletro?", risposta:"scheletro esterno che protegge il corpo"},
-{domanda:"A cosa serve lo scheletro?", risposta:"sostiene il corpo protegge gli organi e permette il movimento"},
-{domanda:"Che cos'è la colonna vertebrale?", risposta:"una struttura di ossa che sostiene il corpo e protegge il midollo"}
+
+{
+domanda:"Gli animali con colonna vertebrale si chiamano...",
+risposta:"vertebrati"
+},
+
+{
+domanda:"Gli animali senza colonna vertebrale si chiamano...",
+risposta:"invertebrati"
+},
+
+{
+domanda:"Lo scheletro serve a sostenere il corpo, proteggere gli organi e...",
+risposta:"permettere il movimento"
+},
+
+{
+domanda:"L'endoscheletro è uno scheletro...",
+risposta:"interno"
+},
+
+{
+domanda:"L'esoscheletro è uno scheletro...",
+risposta:"esterno"
+},
+
+{
+domanda:"La colonna vertebrale protegge il...",
+risposta:"midollo"
+}
+
 ];
 
 let corrente;
 let domandaQuiz;
+let aiutoAttivo = false;
 
-// 🎴 ESTRAZIONE
+// 🎤 ATTIVA / DISATTIVA AIUTO
+
+function toggleAiuto(){
+
+    aiutoAttivo = !aiutoAttivo;
+
+    let bottone = document.getElementById("btnAiuto");
+
+    if(aiutoAttivo){
+        bottone.classList.add("aiutoAttivo");
+    } else {
+        bottone.classList.remove("aiutoAttivo");
+    }
+
+    aggiornaDomande();
+}
+
+// 🎴 NUOVA CARTA
+
 function estrai(){
+
     corrente = animali[Math.floor(Math.random()*animali.length)];
+
     domandaQuiz = quiz[Math.floor(Math.random()*quiz.length)];
 
     document.getElementById("img").src = corrente.img;
 
-    document.getElementById("domande").innerHTML = `
-    <h3>${corrente.nome}</h3>
-    Classe: ${corrente.classe}<br>
-    Tipo: ${corrente.vertebrato}<br><br>
-    🎤 Rispondi a voce:<br>
-    • Dove vive?<br>
-    • Come respira?<br>
-    • Come si riproduce?<br>
-    • Come si muove?<br>
-    • Temperatura?<br>
-    • Cosa mangia?<br>
-    `;
-    
+    aggiornaDomande();
+
     document.getElementById("quiz").innerHTML = `
-    <h3>🧠 Quiz</h3>
-    ${domandaQuiz.domanda}<br>
+
+    <h3>🧠 Completa la frase</h3>
+
+    <p>${domandaQuiz.domanda}</p>
+
     <input id="quizRisposta">
+
     `;
 
     document.getElementById("soluzioni").style.display = "none";
 }
 
-// 🎯 CONTROLLO
+// 🧠 AGGIORNA DOMANDE
+
+function aggiornaDomande(){
+
+    let vive = aiutoAttivo ? `<span class="verbo">vive</span>` : `vive`;
+
+    let respira = aiutoAttivo ? `<span class="verbo">respira</span>` : `respira`;
+
+    let riproduce = aiutoAttivo ? `<span class="verbo">riproduce</span>` : `riproduce`;
+
+    let appartiene = aiutoAttivo ? `<span class="verbo">appartiene</span>` : `appartiene`;
+
+    let muove = aiutoAttivo ? `<span class="verbo">muove</span>` : `muove`;
+
+    let mangia = aiutoAttivo ? `<span class="verbo">mangia</span>` : `mangia`;
+
+    let vertebrato = aiutoAttivo ? `<span class="verbo">È</span>` : `È`;
+
+    let aiutoHTML = "";
+
+    if(aiutoAttivo){
+
+        aiutoHTML = `
+
+        <div class="aiutoBox mostraAiuto">
+
+            <img src="immagini/kidhelp.png">
+
+            <div class="aiutoTesto">
+            I verbi in rosso ti aiutano a costruire la frase.
+            </div>
+
+        </div>
+
+        `;
+    }
+
+    document.getElementById("domande").innerHTML = `
+
+    <div class="areaDomande">
+
+        ${aiutoHTML}
+
+        <h3>🐾 ${corrente.nome}</h3>
+
+        <div class="domanda">
+        🎤 <b>Racconta questo animale:</b>
+        </div>
+
+        <div class="domanda">
+        • Dove ${vive}?
+        </div>
+
+        <div class="domanda">
+        • Come ${respira}?
+        </div>
+
+        <div class="domanda">
+        • Come si ${riproduce}?
+        </div>
+
+        <div class="domanda">
+        • A quale gruppo di riproduzione ${appartiene}?
+        </div>
+
+        <div class="domanda">
+        • Come si ${muove}?
+        </div>
+
+        <div class="domanda">
+        • Com'è la sua temperatura?
+        </div>
+
+        <div class="domanda">
+        • Cosa ${mangia}?
+        </div>
+
+        <div class="domanda">
+        • ${vertebrato} vertebrato o invertebrato?
+        </div>
+
+        <hr style="width:80%;">
+
+        <div class="domanda">
+        🧠 <b>Collega le idee:</b>
+        </div>
+
+        <div class="domanda">
+        • Conosci un altro animale simile?
+        </div>
+
+    </div>
+
+    `;
+}
+
+// 🎯 CONTROLLO QUIZ
+
 function controlla(){
+
     let input = document.getElementById("quizRisposta");
-    let user = input.value.toLowerCase();
+
+    let user = input.value.toLowerCase().trim();
+
     let risposta = domandaQuiz.risposta.toLowerCase();
 
-    if(user.includes(risposta.split(" ")[0])){
+    if(
+        user.includes(risposta) ||
+        risposta.includes(user)
+    ){
+
         input.className = "correct";
+
     } else {
+
         input.className = "wrong";
     }
 }
 
-// 👀 RISPOSTE
+// 👀 MOSTRA RISPOSTE
+
 function mostraRisposte(){
+
     let box = document.getElementById("soluzioni");
+
     box.style.display = "block";
 
     box.innerHTML = `
-    <h3>📘 Risposte</h3>
-    Ambiente: ${corrente.ambiente}<br>
-    Respirazione: ${corrente.respirazione}<br>
-    Riproduzione: ${corrente.riproduzione}<br>
-    Movimento: ${corrente.movimento}<br>
-    Temperatura: ${corrente.temperatura}<br>
-    Nutrizione: ${corrente.nutrizione}<br>
-    Gruppo: ${corrente.categoria}<br>
-    Tipo: ${corrente.vertebrato}<br><br>
-    <b>Quiz:</b> ${domandaQuiz.risposta}
+
+    <h3>📘 Scopriamo l'animale</h3>
+
+    <p>
+    <b>Habitat:</b> ${corrente.ambiente}
+    </p>
+
+    <p>
+    <b>Respirazione:</b> ${corrente.respirazione}
+    </p>
+
+    <p>
+    <b>Riproduzione:</b> ${corrente.riproduzione}
+    </p>
+
+    <p>
+    <b>Movimento:</b> ${corrente.movimento}
+    </p>
+
+    <p>
+    <b>Temperatura:</b> ${corrente.temperatura}
+    </p>
+
+    <p>
+    <b>Nutrizione:</b> ${corrente.nutrizione}
+    </p>
+
+    <p>
+    <b>Categoria alimentare:</b> ${corrente.categoria}
+    </p>
+
+    <p>
+    <b>Tipo:</b> ${corrente.vertebrato}
+    </p>
+
+    <hr>
+
+    <p>
+    💡 Questo animale appartiene alla classe dei
+    <b>${corrente.classe}</b>.
+    </p>
+
+    <p>
+    🧠 Quiz corretto:
+    <b>${domandaQuiz.risposta}</b>
+    </p>
+
     `;
 }
+
+// 🎬 AVVIO AUTOMATICO
+
+estrai();
 
 </script>
 
 </body>
+
 </html>
